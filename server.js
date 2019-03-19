@@ -10,7 +10,20 @@ import cors from "cors";
 
 require('dotenv').config()
 
-const APP_PORT: number = process.env.APP_PORT;
+const APP_PORT: number = process.env.APP_PORT || "80";
+const db = process.env.DB;
+
+// Connect to MongoDB with Mongoose.
+mongoose
+  .connect(
+    db,
+    {
+      useCreateIndex: true,
+      useNewUrlParser: true
+    }
+  )
+  .then(() => console.log("MongoDB connected"))
+  .catch(err => console.log(err));
 
 const compiler: webpack.Compiler = webpack({
     mode: 'development',
@@ -44,9 +57,12 @@ app.use('/', express.static(path.resolve(__dirname, 'public')));
 // Setup GraphQL endpoint
 app.use(
     '/graphql',
+    cors(),
+    bodyParser.json(),
     graphQLHTTP({
         schema: schema,
         pretty: true,
+        graphiql: true
     }),
 );
 
